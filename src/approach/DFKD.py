@@ -28,7 +28,7 @@ class Appr(Inc_Learning_Appr):
 
     @staticmethod
     def exemplars_dataset_class():
-        return None
+        return ExemplarsDataset
 
     @staticmethod
     def extra_parser(args):
@@ -37,7 +37,8 @@ class Appr(Inc_Learning_Appr):
         # parser.add_argument('--all-outputs', action='store_true', required=False,
         #                     help='Allow all weights related to all outputs to be modified (default=%(default)s)')
         # return parser.parse_known_args(args)
-        pass
+        parser = ArgumentParser()
+        return parser.parse_known_args(args)
 
     def _get_optimizer(self):
         """Returns the optimizer"""
@@ -57,7 +58,7 @@ class Appr(Inc_Learning_Appr):
         labels = []
         with torch.no_grad():
             for images, targets in loader:
-                feature = trained_model(images.to(self.device), return_feature=True)
+                output, feature = trained_model(images.to(self.device), return_features=True)
                 labels.append(targets.numpy())
                 features.append(feature.cpu().numpy())
         labels_set = np.unique(labels)
@@ -190,7 +191,7 @@ class Appr(Inc_Learning_Appr):
                 loss = self.criterion(t, outputs, targets.to(self.device), feats, old_features)
                 # during training, the usual accuracy is not computed
                 if t > len(self.means)-1:
-                    hits_taw, hits_tag = 0.0, 0.0
+                    hits_taw, hits_tag = torch.zeros(targets.shape[0]).float(), torch.zeros(targets.shape[0]).float()
                 else:
                     hits_taw, hits_tag = self.classify(t, feats, targets)
                 # Log
