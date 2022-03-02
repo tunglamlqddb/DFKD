@@ -1,6 +1,8 @@
 from os.path import join
 
-_BASE_DATA_PATH = "../data"
+# _BASE_DATA_PATH = "../data"
+_BASE_DATA_PATH = "/content/drive/MyDrive/SBP_pytorch/Struct-Sparse-Pruning/dat"
+
 
 dataset_config = {
     'mnist': {
