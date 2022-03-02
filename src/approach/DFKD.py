@@ -1,7 +1,4 @@
-from locale import normalize
-from statistics import mean
-from tempfile import tempdir
-from sympy import false
+from copy import deepcopy
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
@@ -110,6 +107,16 @@ class Appr(Inc_Learning_Appr):
         for param in previous_model.paramaters():
             param.requires_grad = True
         
+    def post_train_process(self, t, trn_loader):
+        """Runs after training all the epochs of the task (after the train session)"""
+
+        # Save old model to extract features later. This is different from the original approach, since they propose to
+        #  extract the features and store them for future usage. However, when using data augmentation, it is easier to
+        #  keep the model frozen and extract the features when needed.
+        self.model_old = deepcopy(self.model)
+        self.model_old.eval()
+        self.model_old.freeze_all()
+
 
     def train_loop(self, t, trn_loader, val_loader):
         """Contains the epochs loop"""
@@ -132,6 +139,27 @@ class Appr(Inc_Learning_Appr):
         # note: rewrite Save_Prototype to allow any BS -> done
         # note: class_labels not correct -> check target from trn_loader -> done
         self.save_protype(self.model, trn_loader)        
+
+
+    def train_epoch(self, t, trn_loader):
+        """Runs a single epoch"""
+        self.model.train()
+        if self.fix_bn and t > 0:
+            self.model.freeze_bn()
+        for images, targets in trn_loader:
+            # Forward old model
+            old_features = None
+            if t > 0:
+                old_features = self.model_old(images.to(self.device), return_features=True)
+            # Forward current model
+            outputs, feats = self.model(images.to(self.device), return_features=True)
+            loss = self.criterion(t, outputs, targets.to(self.device), feats, old_features)
+            # Backward
+            self.optimizer.zero_grad()
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.clipgrad)
+            self.optimizer.step()
+
 
     def classify(self, task, features, targets):
         # expand means to all batch images                   # bs*256*num_classes
@@ -191,7 +219,7 @@ class Appr(Inc_Learning_Appr):
         
         # constraint OPL loss between current classes and old prototypes
         for mean in self.means:
-            mean = torch.from_numpy(mean).expand_as(features)
+            mean = torch.from_numpy(mean).expand_as(features).detach()
             loss += nn.CosineEmbeddingLoss(features, mean, torch.ones(features.shape[0]).to(self.device))
         
         # constraint old prototypes to be parallel
