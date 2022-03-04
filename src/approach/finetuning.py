@@ -1,3 +1,4 @@
+from pyexpat import features
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
@@ -76,6 +77,27 @@ class Appr(Inc_Learning_Appr):
 
         # EXEMPLAR MANAGEMENT -- select training subset
         self.exemplars_dataset.collect_exemplars(self.model, trn_loader, val_loader.dataset.transform)
+
+    def eval(self, t, val_loader):
+        """Contains the evaluation code"""
+        with torch.no_grad():
+            total_loss, total_acc_taw, total_acc_tag, total_num = 0, 0, 0, 0
+            self.model.eval()
+            for images, targets in val_loader:
+                # Forward current model
+                if self.OPL:
+                    outputs, features = self.model(images.to(self.device), return_features=True)
+                else:
+                    outputs = self.model(images.to(self.device))
+                    features = None
+                loss = self.criterion(t, outputs, targets.to(self.device), features)
+                hits_taw, hits_tag = self.calculate_metrics(outputs, targets)
+                # Log
+                total_loss += loss.item() * len(targets)
+                total_acc_taw += hits_taw.sum().item()
+                total_acc_tag += hits_tag.sum().item()
+                total_num += len(targets)
+        return total_loss / total_num, total_acc_taw / total_num, total_acc_tag / total_num
 
     def criterion(self, t, outputs, targets, features=None):
         """Returns the loss value"""
