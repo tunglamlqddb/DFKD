@@ -61,11 +61,11 @@ class Appr(Inc_Learning_Appr):
                 output, feature = trained_model(images.to(self.device), return_features=True)
                 labels.append(targets.numpy())
                 features.append(feature.cpu().numpy())
-        labels_set = np.unique(labels)
         labels = np.hstack(labels)
-        labels = np.reshape(labels, labels.shape[0]*labels.shape[1])
+        labels_set = np.unique(labels)
+        # labels = np.reshape(labels, labels.shape[0]*labels.shape[1])
         features = np.concatenate(features, 0)
-        features = np.reshape((feature, features.shape[0]*features.shape[1], features.shape[2]))
+        # features = np.reshape((feature, features.shape[0]*features.shape[1], features.shape[2]))
         feature_dim = features.shape[1]
 
         for item in labels_set:
