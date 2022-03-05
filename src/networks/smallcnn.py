@@ -32,7 +32,7 @@ class SmallCNN(nn.Module):
         )
         self.fc6 = nn.Linear(in_features=128 * 4 * 4, out_features=256, bias=True)
         # last classifier layer (head) with as many outputs as classes
-        self.fc = nn.Linear(in_features=2048, out_features=num_classes, bias=True)
+        self.fc = nn.Linear(in_features=256, out_features=num_classes, bias=True)
         # and `head_var` with the name of the head, so it can be removed when doing incremental learning experiments
         self.head_var = 'fc'
 
