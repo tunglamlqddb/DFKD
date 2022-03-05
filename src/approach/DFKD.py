@@ -72,8 +72,8 @@ class Appr(Inc_Learning_Appr):
             index = np.where(item==labels)[0]
             feature_classwise = features[index]
             self.class_labels.append(item)
-            self.means.append(np.mean(feature_classwise, axis=0))
-            self.covs.append(np.cov(feature_classwise.T))
+            self.means.append(torch.from_numpy(np.mean(feature_classwise, axis=0)))
+            self.covs.append(torch.from_numpy(np.cov(feature_classwise.T)))
 
     # not get each class yet
     def generate_fake_data(self, previous_model, input_size, num_iters=1000, bs=100, lr=1e-3, train_iters=1000, temp=20.0):
@@ -151,7 +151,7 @@ class Appr(Inc_Learning_Appr):
             # Forward old model
             old_features = None
             if t > 0:
-                old_features = self.model_old(images.to(self.device), return_features=True)
+                old_outputs, old_features = self.model_old(images.to(self.device), return_features=True)
             # Forward current model
             outputs, feats = self.model(images.to(self.device), return_features=True)
             loss = self.criterion(t, outputs, targets.to(self.device), feats, old_features)
@@ -172,7 +172,7 @@ class Appr(Inc_Learning_Appr):
         features = features.expand_as(means)
         # get cosine-similarities for all images to all prototypes
         # note: features and means do not need normalize 
-        cos_sim = torch.nn.functional.cosine_similarity(features, means, dim=1, eps=1e-08)   # bs*num_classes
+        cos_sim = torch.nn.functional.cosine_similarity(features, means.to(self.device), dim=1, eps=1e-08)   # bs*num_classes
         pred = cos_sim.argmin(1)
         hits_tag = (pred == targets.to(self.device)).float()
         return hits_tag
@@ -185,7 +185,7 @@ class Appr(Inc_Learning_Appr):
                 # Forward old model
                 old_features = None
                 if t > 0:
-                    old_features = self.model_old(images.to(self.device), return_features=True)
+                    old_outputs, old_features = self.model_old(images.to(self.device), return_features=True)
                 # Forward current model
                 outputs, feats = self.model(images.to(self.device), return_features=True)
                 loss = self.criterion(t, outputs, targets.to(self.device), feats, old_features)
@@ -220,8 +220,8 @@ class Appr(Inc_Learning_Appr):
         
         # constraint OPL loss between current classes and old prototypes
         for mean in self.means:
-            mean = torch.from_numpy(mean).expand_as(features).detach()
-            loss += nn.CosineEmbeddingLoss(features, mean, torch.ones(features.shape[0]).to(self.device))
+            mean = mean.expand_as(features).detach().to(self.device)
+            loss += nn.CosineEmbeddingLoss()(features, mean, torch.ones(features.shape[0]).to(self.device))
         
         # constraint old prototypes to be parallel
         if old_features:

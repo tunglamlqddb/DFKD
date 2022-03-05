@@ -143,6 +143,7 @@ def get_datasets(dataset, path, num_tasks, nc_first_task, validation, trn_transf
         Dataset = basedat.BaseDataset
 
     # get datasets, apply correct label offsets for each task
+    print("Class order: ", class_indices)
     offset = 0
     for task in range(num_tasks):
         all_data[task]['trn']['y'] = [label + offset for label in all_data[task]['trn']['y']]
