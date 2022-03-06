@@ -162,6 +162,8 @@ class Appr(Inc_Learning_Appr):
             self.optimizer.step()
 
 
+    # argmax
+    # need abs?
     def classify(self, task, features, targets):
         # expand means to all batch images                   # bs*256*num_classes
         means = torch.stack(self.means)

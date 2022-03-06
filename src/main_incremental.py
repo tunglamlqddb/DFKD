@@ -1,4 +1,4 @@
-import os
+import os, sys
 import time
 import torch
 import argparse
@@ -279,7 +279,7 @@ def main(argv=None):
             logger.log_scalar(task=t, iter=u, name='acc_tag', group='test', value=100 * acc_tag[t, u])
             logger.log_scalar(task=t, iter=u, name='forg_taw', group='test', value=100 * forg_taw[t, u])
             logger.log_scalar(task=t, iter=u, name='forg_tag', group='test', value=100 * forg_tag[t, u])
-
+        
         # Save
         print('Save at ' + os.path.join(args.results_path, full_exp_name))
         logger.log_result(acc_taw, name="acc_taw", step=t)
@@ -303,6 +303,10 @@ def main(argv=None):
             weights, biases = last_layer_analysis(net.heads, t, taskcla, y_lim=True, sort_weights=True)
             logger.log_figure(name='weights', iter=t, figure=weights)
             logger.log_figure(name='bias', iter=t, figure=biases)
+        print('Stop at task 1')
+        ncm_loss, ncm_acc, _ = appr.eval_ncm(0, tst_loader[0])
+        print('DEBUG: eval using ncm after task 1', ncm_acc*100)
+        sys.quit()
     # Print Summary
     utils.print_summary(acc_taw, acc_tag, forg_taw, forg_tag)
     print('[Elapsed time = {:.1f} h]'.format((time.time() - tstart) / (60 * 60)))
