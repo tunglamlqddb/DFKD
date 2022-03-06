@@ -120,7 +120,7 @@ class Appr(Inc_Learning_Appr):
         cos_sim = torch.nn.functional.cosine_similarity(features, means.to(self.device), dim=1, eps=1e-08)   # bs*num_classes
         pred = cos_sim.argmax(1)
         hits_tag = (pred == targets.to(self.device)).float()
-        return hits_tag
+        return hits_tag, hits_tag 
 
     def eval_ncm(self, t, val_loader):
         with torch.no_grad():

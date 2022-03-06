@@ -1,5 +1,6 @@
 import os, sys
 import time
+from flask import app
 import torch
 import argparse
 import importlib
@@ -305,8 +306,14 @@ def main(argv=None):
             logger.log_figure(name='bias', iter=t, figure=biases)
         print('Stop at task 1')
         ncm_loss, ncm_acc, _ = appr.eval_ncm(0, tst_loader[0])
-        print('DEBUG: eval using ncm after task 1', ncm_acc*100)
-        sys.quit()
+        print('DEBUG: eval using ncm after task 1: ', ncm_acc*100)
+        print('Check orthogonaliy:')
+        for i in range(len(appr.means)):
+            for j in range(len(appr.means)):
+                print(torch.dot(appr.means[i],appr.means[j]), end='  ')
+            print()
+
+        sys.exit()
     # Print Summary
     utils.print_summary(acc_taw, acc_tag, forg_taw, forg_tag)
     print('[Elapsed time = {:.1f} h]'.format((time.time() - tstart) / (60 * 60)))
