@@ -133,7 +133,7 @@ class Appr(Inc_Learning_Appr):
                     old_outputs, old_features = self.model_old(images.to(self.device), return_features=True)
                 # Forward current model
                 outputs, feats = self.model(images.to(self.device), return_features=True)
-                loss = self.criterion(t, outputs, targets.to(self.device), feats, old_features)
+                loss = self.criterion(t, outputs, targets.to(self.device), feats)
                 # during training, the usual accuracy is not computed
                 if t > len(self.means)-1:
                     print('No means created yet!')
