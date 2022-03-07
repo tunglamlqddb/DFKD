@@ -1,5 +1,4 @@
-from pyexpat import features
-import torch
+import torch, warnings
 import torch.nn.functional as F
 import torch.nn as nn
 import numpy as np
@@ -78,6 +77,21 @@ class Appr(Inc_Learning_Appr):
             self.class_labels.append(item)
             self.means.append(torch.from_numpy(np.mean(feature_classwise, axis=0)))
             self.covs.append(torch.from_numpy(np.cov(feature_classwise.T)))
+
+    def pre_train_process(self, t, trn_loader):
+        """Runs before training all epochs of the task (before the train session)"""
+        if t == 0:
+            # Sec. 4.1: "the ReLU in the penultimate layer is removed to allow the features to take both positive and
+            # negative values"
+            if self.model.model.__class__.__name__ == 'ResNet':
+                old_block = self.model.model.layer3[-1]
+                self.model.model.layer3[-1] = BasicBlockNoRelu(old_block.conv1, old_block.bn1, old_block.relu,
+                                                               old_block.conv2, old_block.bn2, old_block.downsample)
+            elif self.mode.model.__class__.name__ == 'SmallCNN':
+                self.model.model.last_relu = False
+            else:
+                warnings.warn("Warning: ReLU not removed from last block.")
+        super().pre_train_process(t, trn_loader)
 
     def train_epoch(self, t, trn_loader):
         """Runs a single epoch"""
@@ -222,3 +236,26 @@ class OrthogonalProjectionLoss(nn.Module):
         loss = (1.0 - pos_pairs_mean) + self.gamma * neg_pairs_mean
 
         return loss
+
+# This class implements a ResNet Basic Block without the final ReLu in the forward
+class BasicBlockNoRelu(nn.Module):
+    expansion = 1
+
+    def __init__(self, conv1, bn1, relu, conv2, bn2, downsample):
+        super(BasicBlockNoRelu, self).__init__()
+        self.conv1 = conv1
+        self.bn1 = bn1
+        self.relu = relu
+        self.conv2 = conv2
+        self.bn2 = bn2
+        self.downsample = downsample
+
+    def forward(self, x):
+        residual = x
+        out = self.relu(self.bn1(self.conv1(x)))
+        out = self.bn2(self.conv2(out))
+        if self.downsample is not None:
+            residual = self.downsample(x)
+        out += residual
+        # Removed final ReLU
+        return out

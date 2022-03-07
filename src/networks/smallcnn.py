@@ -7,8 +7,10 @@ class SmallCNN(nn.Module):
         Check this blog for some info: https://learningai.io/projects/2017/06/29/tiny-imagenet.html
     """
 
-    def __init__(self, num_classes=1000):
+    def __init__(self, num_classes=1000, last_relu=True):
         super().__init__()
+
+        self.last_relu = last_relu
 
         self.features = nn.Sequential(
             nn.Conv2d(3, 32, kernel_size=3, padding=1),
@@ -39,7 +41,10 @@ class SmallCNN(nn.Module):
     def forward(self, x):
         h = self.features(x)
         h = h.view(x.size(0), -1)
-        h = F.dropout(F.relu(self.fc6(h)), 0.5)
+        if self.last_relu:
+            h = F.dropout(F.relu(self.fc6(h)), 0.5)
+        else:
+            h = F.dropout(self.fc6(h), 0.5)
         h = self.fc(h)
         return h
 
