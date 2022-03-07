@@ -305,6 +305,7 @@ def main(argv=None):
             logger.log_figure(name='weights', iter=t, figure=weights)
             logger.log_figure(name='bias', iter=t, figure=biases)
         print('Stop at task 1')
+        torch.save(appr.model, '/content/DFKD/test_mode.pt')
         ncm_loss, ncm_acc, _ = appr.eval_ncm(0, tst_loader[0])
         print('DEBUG: eval using ncm after task 1: ', ncm_acc*100)
         print('Check orthogonaliy:')
