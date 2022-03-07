@@ -15,12 +15,14 @@ class Appr(Inc_Learning_Appr):
 
     def __init__(self, model, device, nepochs=100, lr=0.05, lr_min=1e-4, lr_factor=3, lr_patience=5, clipgrad=10000,
                  momentum=0, wd=0, multi_softmax=False, wu_nepochs=0, wu_lr_factor=1, fix_bn=False, eval_on_train=False,
-                 logger=None, exemplars_dataset=None, all_outputs=False, OPL=False):
+                 logger=None, exemplars_dataset=None, all_outputs=False, OPL=False, gamma=0.5, opl_weight=1.0):
         super(Appr, self).__init__(model, device, nepochs, lr, lr_min, lr_factor, lr_patience, clipgrad, momentum, wd,
                                    multi_softmax, wu_nepochs, wu_lr_factor, fix_bn, eval_on_train, logger,
                                    exemplars_dataset)
         self.all_out = all_outputs
         self.OPL = OPL
+        self.gamma = gamma
+        self.opl_weight = opl_weight
         self.means = []
         self.covs = []
         self.class_labels = []
@@ -37,6 +39,11 @@ class Appr(Inc_Learning_Appr):
                             help='Allow all weights related to all outputs to be modified (default=%(default)s)')
         parser.add_argument('--OPL', action='store_true', required=False,
                             help='OPL loss (default=%(default)s)')
+        parser.add_argument('--gamma', default=0.5, type=float, required=False,
+                        help='Gamma for neg pair in OPL (default=%(default)s)')
+        parser.add_argument('--opl_weight', default=1, type=float, required=False,
+                        help='Weight for OPL loss (default=%(default)s)')
+    
         return parser.parse_known_args(args)
 
     def _get_optimizer(self):
@@ -174,12 +181,12 @@ class Appr(Inc_Learning_Appr):
             if not self.OPL:
                 return torch.nn.functional.cross_entropy(torch.cat(outputs, dim=1), targets)
             else:
-                return torch.nn.functional.cross_entropy(torch.cat(outputs, dim=1), targets) + OrthogonalProjectionLoss()(features, targets, normalize=True)
+                return torch.nn.functional.cross_entropy(torch.cat(outputs, dim=1), targets) + self.opl_weight*OrthogonalProjectionLoss(self.gamma)(features, targets, normalize=True)
         else:
             if not self.OPL:
                 return torch.nn.functional.cross_entropy(outputs[t], targets - self.model.task_offset[t])
             else:
-                return torch.nn.functional.cross_entropy(outputs[t], targets - self.model.task_offset[t]) + OrthogonalProjectionLoss()(features, targets - self.model.task_offset[t], normalize=True)
+                return torch.nn.functional.cross_entropy(outputs[t], targets - self.model.task_offset[t]) + self.opl_weight*OrthogonalProjectionLoss(self.gamma)(features, targets - self.model.task_offset[t], normalize=True)
 
 class OrthogonalProjectionLoss(nn.Module):
     def __init__(self, gamma=0.5):
@@ -203,7 +210,7 @@ class OrthogonalProjectionLoss(nn.Module):
         dot_prod = torch.matmul(features, features.t())
 
         pos_pairs_mean = (mask_pos * dot_prod).sum() / (mask_pos.sum() + 1e-6)
-        neg_pairs_mean = (mask_neg * dot_prod).sum() / (mask_neg.sum() + 1e-6)  # TODO: removed abs
+        neg_pairs_mean = torch.abs(mask_neg * dot_prod).sum() / (mask_neg.sum() + 1e-6)  # TODO: removed abs
 
         loss = (1.0 - pos_pairs_mean) + self.gamma * neg_pairs_mean
 

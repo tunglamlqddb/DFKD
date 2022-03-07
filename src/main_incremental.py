@@ -310,7 +310,7 @@ def main(argv=None):
         print('Check orthogonaliy:')
         for i in range(len(appr.means)):
             for j in range(len(appr.means)):
-                print(torch.dot(appr.means[i],appr.means[j]), end='  ')
+                print(torch.nn.functional.cosine_similarity(appr.means[i],appr.means[j], dim=0), end='  ')
             print()
 
         sys.exit()
