@@ -249,7 +249,7 @@ class Appr(Inc_Learning_Appr):
         else: loss = 0.0
         
         features = F.normalize(features, p=2, dim=1)
-        if old_features:
+        if old_features is not None:
             old_features = F.normalize(old_features, p=2, dim=1)
         
         # compute OPL loss for current classes
