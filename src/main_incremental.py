@@ -275,24 +275,24 @@ def main(argv=None):
                   '| TAg acc={:5.1f}%, forg={:5.1f}% <<<'.format(u, test_loss,
                                                                  100 * acc_taw[t, u], 100 * forg_taw[t, u],
                                                                  100 * acc_tag[t, u], 100 * forg_tag[t, u]))
-            logger.log_scalar(task=t, iter=u, name='loss', group='test', value=test_loss)
-            logger.log_scalar(task=t, iter=u, name='acc_taw', group='test', value=100 * acc_taw[t, u])
-            logger.log_scalar(task=t, iter=u, name='acc_tag', group='test', value=100 * acc_tag[t, u])
-            logger.log_scalar(task=t, iter=u, name='forg_taw', group='test', value=100 * forg_taw[t, u])
-            logger.log_scalar(task=t, iter=u, name='forg_tag', group='test', value=100 * forg_tag[t, u])
+            # logger.log_scalar(task=t, iter=u, name='loss', group='test', value=test_loss)
+            # logger.log_scalar(task=t, iter=u, name='acc_taw', group='test', value=100 * acc_taw[t, u])
+            # logger.log_scalar(task=t, iter=u, name='acc_tag', group='test', value=100 * acc_tag[t, u])
+            # logger.log_scalar(task=t, iter=u, name='forg_taw', group='test', value=100 * forg_taw[t, u])
+            # logger.log_scalar(task=t, iter=u, name='forg_tag', group='test', value=100 * forg_tag[t, u])
         
         # Save
         print('Save at ' + os.path.join(args.results_path, full_exp_name))
-        logger.log_result(acc_taw, name="acc_taw", step=t)
-        logger.log_result(acc_tag, name="acc_tag", step=t)
-        logger.log_result(forg_taw, name="forg_taw", step=t)
-        logger.log_result(forg_tag, name="forg_tag", step=t)
+        # logger.log_result(acc_taw, name="acc_taw", step=t)
+        # logger.log_result(acc_tag, name="acc_tag", step=t)
+        # logger.log_result(forg_taw, name="forg_taw", step=t)
+        # logger.log_result(forg_tag, name="forg_tag", step=t)
         logger.save_model(net.state_dict(), task=t)
-        logger.log_result(acc_taw.sum(1) / np.tril(np.ones(acc_taw.shape[0])).sum(1), name="avg_accs_taw", step=t)
-        logger.log_result(acc_tag.sum(1) / np.tril(np.ones(acc_tag.shape[0])).sum(1), name="avg_accs_tag", step=t)
-        aux = np.tril(np.repeat([[tdata[1] for tdata in taskcla[:max_task]]], max_task, axis=0))
-        logger.log_result((acc_taw * aux).sum(1) / aux.sum(1), name="wavg_accs_taw", step=t)
-        logger.log_result((acc_tag * aux).sum(1) / aux.sum(1), name="wavg_accs_tag", step=t)
+        # logger.log_result(acc_taw.sum(1) / np.tril(np.ones(acc_taw.shape[0])).sum(1), name="avg_accs_taw", step=t)
+        # logger.log_result(acc_tag.sum(1) / np.tril(np.ones(acc_tag.shape[0])).sum(1), name="avg_accs_tag", step=t)
+        # aux = np.tril(np.repeat([[tdata[1] for tdata in taskcla[:max_task]]], max_task, axis=0))
+        # logger.log_result((acc_taw * aux).sum(1) / aux.sum(1), name="wavg_accs_taw", step=t)
+        # logger.log_result((acc_tag * aux).sum(1) / aux.sum(1), name="wavg_accs_tag", step=t)
 
         # Last layer analysis
         if args.last_layer_analysis:
@@ -304,17 +304,17 @@ def main(argv=None):
             weights, biases = last_layer_analysis(net.heads, t, taskcla, y_lim=True, sort_weights=True)
             logger.log_figure(name='weights', iter=t, figure=weights)
             logger.log_figure(name='bias', iter=t, figure=biases)
-        print('Stop at task 1')
-        torch.save(appr.model, '/content/DFKD/test_mode.pt')
-        ncm_loss, ncm_acc, _ = appr.eval_ncm(0, tst_loader[0])
-        print('DEBUG: eval using ncm after task 1: ', ncm_acc*100)
-        print('Check orthogonaliy:')
-        for i in range(len(appr.means)):
-            for j in range(len(appr.means)):
-                print(torch.nn.functional.cosine_similarity(appr.means[i],appr.means[j], dim=0), end='  ')
-            print()
+        # print('Stop at task 1')
+        # torch.save(appr.model, '/content/DFKD/test_mode.pt')
+        # ncm_loss, ncm_acc, _ = appr.eval_ncm(0, tst_loader[0])
+        # print('DEBUG: eval using ncm after task 1: ', ncm_acc*100)
+        # print('Check orthogonaliy:')
+        # for i in range(len(appr.means)):
+        #     for j in range(len(appr.means)):
+        #         print(torch.nn.functional.cosine_similarity(appr.means[i],appr.means[j], dim=0), end='  ')
+        #     print()
 
-        sys.exit()
+        # sys.exit()
     # Print Summary
     utils.print_summary(acc_taw, acc_tag, forg_taw, forg_tag)
     print('[Elapsed time = {:.1f} h]'.format((time.time() - tstart) / (60 * 60)))

@@ -1,0 +1,44 @@
+time complexity  -> AlwaysDreaming's idea: Approximation with a NN (vector noise -> image)
+			poor on CIFAR100 -> compare with AlwaysDreaming         
+			diverse & BatchNorm 
+                        ?? different architectures ?? -> F^-1 -> model complexity: Lipschizt (smaller -> more simple -> easier to inverse)
+			?? Previous works on NN inversion ??
+				- Invertible Residual Networks -behrmann19
+				- Invertible DenseNets -Diaz21
+			Dropout & L2 
+			BatchNorm: small variance (issue) -> better: ReBN || ReGN -> Trường
+
+- DF:   
+    + teacher --> works well
+    + sample noise -> optim noise   mini batch: 64 -> ...... ->   time
+    + generator: CNN (vector noise ~ gauss) -> image 3*32*32
+        epoch:
+            loss = KD + diver
+            supervise: teacher
+
+	+ generator: less time -> appro -> Dreaming: CNN
+	+ compress & expand -> 
+	+ mechanism: 
+		- ZSKD: worse   
+		- Use Dreaming's 
+         
+- DFCL
+- Orthogonal: give it a go
+	+ features of same class samples -> parallel
+		          different class    -> orthogonal
+             -> means 
+        - batch norm in ResNet -> Batch normalization orthogonalizes representations in deep random networks.
+
+	+ old vs new classes:
+		- within new classes -> similar OPL
+		- features of new class samples ORTHOGONAL to old classes' means
+		- preserve relatvie angles of old classes' means:
+                current data x: Cos(Old_model(x), New_model(x))
+
+	+ closest-angle-class classifier - Nearest class mean
+        feature(NEW_X) 
+
+	+ But, experiment -> must use with CE
+
+
+

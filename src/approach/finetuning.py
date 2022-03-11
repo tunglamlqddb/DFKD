@@ -18,7 +18,7 @@ class Appr(Inc_Learning_Appr):
         super(Appr, self).__init__(model, device, nepochs, lr, lr_min, lr_factor, lr_patience, clipgrad, momentum, wd,
                                    multi_softmax, wu_nepochs, wu_lr_factor, fix_bn, eval_on_train, logger,
                                    exemplars_dataset)
-        self.all_out = all_outputs
+        self.all_out = all_outputs 
         self.CE = CE
         self.OPL = OPL
         self.gamma = gamma
