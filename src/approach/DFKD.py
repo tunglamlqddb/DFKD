@@ -209,7 +209,7 @@ class Appr(Inc_Learning_Appr):
         cos_sim = torch.nn.functional.cosine_similarity(features, means.to(self.device), dim=1, eps=1e-08)   # bs*num_classes
         pred = cos_sim.argmax(1)
         hits_tag = (pred == targets.to(self.device)).float()
-        return hits_tag
+        return hits_tag, hits_tag
     
     def eval(self, t, val_loader):
         with torch.no_grad():
@@ -225,7 +225,7 @@ class Appr(Inc_Learning_Appr):
                 loss = self.criterion(t, outputs, targets.to(self.device), feats, old_features)
                 # during training, the usual accuracy is not computed
                 if t > len(self.means)-1:
-                    hits_taw, hits_tag = torch.zeros(targets.shape[0]).float(), torch.zeros(targets.shape[0]).float()
+                    hits_taw, hits_tag = self.calculate_metrics(outputs, targets)
                 else:
                     hits_taw, hits_tag = self.classify(t, feats, targets)
                 # Log
