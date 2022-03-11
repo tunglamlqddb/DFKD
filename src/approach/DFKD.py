@@ -263,7 +263,7 @@ class Appr(Inc_Learning_Appr):
             # loss += nn.CosineEmbeddingLoss()(features, mean, -1*torch.ones(features.shape[0]).to(self.device))
         
         # constraint old prototypes to be parallel
-        if old_features:
+        if old_features is not None:
             loss += nn.CosineEmbeddingLoss()(features, old_features.detach(),
                                             torch.ones(features.shape[0]).to(self.device))
         return loss
