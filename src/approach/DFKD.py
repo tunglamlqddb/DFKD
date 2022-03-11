@@ -17,14 +17,14 @@ class Appr(Inc_Learning_Appr):
 
     def __init__(self, model, device, nepochs=100, lr=0.05, lr_min=1e-4, lr_factor=3, lr_patience=5, clipgrad=10000,
                  momentum=0, wd=0, multi_softmax=False, wu_nepochs=0, wu_lr_factor=1, fix_bn=False, eval_on_train=False,
-                 logger=None, exemplars_dataset=None, all_out=False, CE=True, OPL=True, gamma=0.5, opl_weight=1.0, last_relu=True):
+                 logger=None, exemplars_dataset=None, all_outputs=False, CE=True, OPL=True, gamma=0.5, opl_weight=1.0, last_relu=True):
         super(Appr, self).__init__(model, device, nepochs, lr, lr_min, lr_factor, lr_patience, clipgrad, momentum, wd,
                                    multi_softmax, wu_nepochs, wu_lr_factor, fix_bn, eval_on_train, logger,
                                    exemplars_dataset)
         self.means = []
         self.covs = []
         self.class_labels = []
-        self.all_out = all_out
+        self.all_out = all_outputs
         self.CE = CE     # use CE loss or NCM loss
         self.OPL = OPL
         self.gamma = gamma
