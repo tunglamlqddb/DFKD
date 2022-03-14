@@ -34,6 +34,7 @@ class Appr(Inc_Learning_Appr):
         self.mean_weight = mean_weight
         self.cosine_weight = cosine_weight
         self.last_relu = last_relu
+        self.eval_type = 'normal'
 
     @staticmethod
     def exemplars_dataset_class():

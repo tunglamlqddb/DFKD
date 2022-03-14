@@ -232,7 +232,8 @@ def main(argv=None):
             continue
         if t == 0 and os.path.isfile(os.path.join(os.path.join(args.results_path, full_exp_name), "models", "test_model.pt")):
             print('saved model!!')
-            net = torch.load(os.path.join(os.path.join(args.results_path, full_exp_name), "models", "test_model.pt")).to(device)
+            appr.model = torch.load(os.path.join(os.path.join(args.results_path, full_exp_name), "models", "test_model.pt"))
+            appr.model.to(device)
             train = False
             
         print('*' * 108)
