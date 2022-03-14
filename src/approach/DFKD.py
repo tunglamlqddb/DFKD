@@ -231,7 +231,6 @@ class Appr(Inc_Learning_Appr):
                 if self.eval_type=='normal':
                     hits_taw, hits_tag = self.calculate_metrics(outputs, targets)
                 else:
-                    print('eval using ncm')
                     hits_taw, hits_tag = self.classify(t, feats, targets)
                 # Log
                 total_loss += loss.item() * len(targets)

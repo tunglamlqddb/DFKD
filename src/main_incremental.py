@@ -285,7 +285,6 @@ def main(argv=None):
                 _, taw, tag = appr.eval(u, tst_loader[u])
                 print(' --- normal eval: TAg acc={:5.1f}% <<<'.format(100*tag)) 
                 appr.eval_type = tmp
-                print('Restore eval type ', appr.eval_type)
             print()
             # logger.log_scalar(task=t, iter=u, name='loss', group='test', value=test_loss)
             # logger.log_scalar(task=t, iter=u, name='acc_taw', group='test', value=100 * acc_taw[t, u])
