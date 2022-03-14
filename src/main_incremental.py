@@ -226,48 +226,50 @@ def main(argv=None):
     forg_taw = np.zeros((max_task, max_task))
     forg_tag = np.zeros((max_task, max_task))
     for t, (_, ncla) in enumerate(taskcla):
+        train = True
         # Early stop tasks if flag
         if t >= max_task:
             continue
         if t == 0 and os.path.isfile(os.path.join(os.path.join(args.results_path, full_exp_name), "models", "test_model.pt")):
             print('saved model!!')
             net = torch.load(os.path.join(os.path.join(args.results_path, full_exp_name), "models", "test_model.pt"))
-            continue
-
+            train = False
+            
         print('*' * 108)
         print('Task {:2d}'.format(t))
         print('*' * 108)
 
-        # Add head for current task
-        net.add_head(taskcla[t][1])
-        net.to(device)
+        if train: 
+            # Add head for current task
+            net.add_head(taskcla[t][1])
+            net.to(device)
 
-        # GridSearch
-        if t < args.gridsearch_tasks:
+            # GridSearch
+            if t < args.gridsearch_tasks:
 
-            # Search for best finetuning learning rate -- Maximal Plasticity Search
-            print('LR GridSearch')
-            best_ft_acc, best_ft_lr = gridsearch.search_lr(appr.model, t, trn_loader[t], val_loader[t])
-            # Apply to approach
-            appr.lr = best_ft_lr
-            gen_params = gridsearch.gs_config.get_params('general')
-            for k, v in gen_params.items():
-                if not isinstance(v, list):
-                    setattr(appr, k, v)
+                # Search for best finetuning learning rate -- Maximal Plasticity Search
+                print('LR GridSearch')
+                best_ft_acc, best_ft_lr = gridsearch.search_lr(appr.model, t, trn_loader[t], val_loader[t])
+                # Apply to approach
+                appr.lr = best_ft_lr
+                gen_params = gridsearch.gs_config.get_params('general')
+                for k, v in gen_params.items():
+                    if not isinstance(v, list):
+                        setattr(appr, k, v)
 
-            # Search for best forgetting/intransigence tradeoff -- Stability Decay
-            print('Trade-off GridSearch')
-            best_tradeoff, tradeoff_name = gridsearch.search_tradeoff(args.approach, appr,
-                                                                      t, trn_loader[t], val_loader[t], best_ft_acc)
-            # Apply to approach
-            if tradeoff_name is not None:
-                setattr(appr, tradeoff_name, best_tradeoff)
+                # Search for best forgetting/intransigence tradeoff -- Stability Decay
+                print('Trade-off GridSearch')
+                best_tradeoff, tradeoff_name = gridsearch.search_tradeoff(args.approach, appr,
+                                                                        t, trn_loader[t], val_loader[t], best_ft_acc)
+                # Apply to approach
+                if tradeoff_name is not None:
+                    setattr(appr, tradeoff_name, best_tradeoff)
 
+                print('-' * 108)
+
+            # Train
+            appr.train(t, trn_loader[t], val_loader[t])
             print('-' * 108)
-
-        # Train
-        appr.train(t, trn_loader[t], val_loader[t])
-        print('-' * 108)
 
         # Test
         for u in range(t + 1):
