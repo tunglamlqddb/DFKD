@@ -235,6 +235,7 @@ def main(argv=None):
             appr.model = torch.load(os.path.join(os.path.join(args.results_path, full_exp_name), "models", "test_model.pt"))
             appr.model.to(device)
             train = False
+            appr.post_train_process()
             
         print('*' * 108)
         print('Task {:2d}'.format(t))
