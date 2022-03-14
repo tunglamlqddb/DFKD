@@ -232,8 +232,9 @@ def main(argv=None):
             continue
         if t == 0 and os.path.isfile(os.path.join(os.path.join(args.results_path, full_exp_name), "models", "test_model.pt")):
             print('saved model!!')
-            appr.model = torch.load(os.path.join(os.path.join(args.results_path, full_exp_name), "models", "test_model.pt"))
-            appr.model.to(device)
+            net = torch.load(os.path.join(os.path.join(args.results_path, full_exp_name), "models", "test_model.pt"))
+            net.to(device)
+            appr.model = net
             train = False
             appr.post_train_process(t, trn_loader[t])
             
