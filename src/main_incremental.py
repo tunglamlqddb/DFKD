@@ -230,13 +230,13 @@ def main(argv=None):
         # Early stop tasks if flag
         if t >= max_task:
             continue
-        if t == 0 and os.path.isfile(os.path.join(os.path.join(args.results_path, full_exp_name), "models", "test_model.pt")):
-            print('saved model!!')
-            net = torch.load(os.path.join(os.path.join(args.results_path, full_exp_name), "models", "test_model.pt"))
-            net.to(device)
-            appr.model = net
-            train = False
-            appr.post_train_process(t, trn_loader[t])
+        # if t == 0 and os.path.isfile(os.path.join(os.path.join(args.results_path, full_exp_name), "models", "test_model.pt")):
+        #     print('saved model!!')
+        #     net = torch.load(os.path.join(os.path.join(args.results_path, full_exp_name), "models", "test_model.pt"))
+        #     net.to(device)
+        #     appr.model = net
+        #     train = False
+        #     appr.post_train_process(t, trn_loader[t])
             
         print('*' * 108)
         print('Task {:2d}'.format(t))

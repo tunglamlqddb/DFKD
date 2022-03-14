@@ -15,7 +15,7 @@ class Logger(ExperimentLogger):
         super(Logger, self).__init__(log_path, exp_name, begin_time)
 
         # self.begin_time_str = self.begin_time.strftime("%Y-%m-%d-%H-%M")
-        self.begin_time_str = 'test'
+        self.begin_time_str = 'test_' + self.begin_time.strftime("%Y-%m-%d-%H-%M")
 
         # Duplicate standard outputs
         sys.stdout = FileOutputDuplicator(sys.stdout,
