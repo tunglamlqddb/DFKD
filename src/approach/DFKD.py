@@ -1,4 +1,6 @@
+from cmath import cos
 from copy import deepcopy
+from statistics import mean
 import torch, warnings
 import torch.nn.functional as F
 import torch.nn as nn
@@ -17,7 +19,7 @@ class Appr(Inc_Learning_Appr):
 
     def __init__(self, model, device, nepochs=100, lr=0.05, lr_min=1e-4, lr_factor=3, lr_patience=5, clipgrad=10000,
                  momentum=0, wd=0, multi_softmax=False, wu_nepochs=0, wu_lr_factor=1, fix_bn=False, eval_on_train=False,
-                 logger=None, exemplars_dataset=None, all_outputs=False, CE=True, OPL=True, gamma=0.5, opl_weight=1.0, last_relu=True):
+                 logger=None, exemplars_dataset=None, all_outputs=False, CE=True, OPL=True, gamma=0.5, opl_weight=1.0, mean_weight=1.0, cosine_weight=1.0, last_relu=True):
         super(Appr, self).__init__(model, device, nepochs, lr, lr_min, lr_factor, lr_patience, clipgrad, momentum, wd,
                                    multi_softmax, wu_nepochs, wu_lr_factor, fix_bn, eval_on_train, logger,
                                    exemplars_dataset)
@@ -29,6 +31,8 @@ class Appr(Inc_Learning_Appr):
         self.OPL = OPL
         self.gamma = gamma
         self.opl_weight = opl_weight
+        self.mean_weight = mean_weight
+        self.cosine_weight = cosine_weight
         self.last_relu = last_relu
 
     @staticmethod
@@ -48,6 +52,10 @@ class Appr(Inc_Learning_Appr):
         parser.add_argument('--gamma', default=0.5, type=float, required=False,
                         help='Gamma for neg pair in OPL (default=%(default)s)')
         parser.add_argument('--opl_weight', default=1., type=float, required=False,
+                        help='Weight for OPL loss (default=%(default)s)')
+        parser.add_argument('--mean_weight', default=1., type=float, required=False,
+                        help='Weight for OPL loss (default=%(default)s)')
+        parser.add_argument('--cosin_weight', default=1., type=float, required=False,
                         help='Weight for OPL loss (default=%(default)s)')
         parser.add_argument('--last_relu', action='store_false', required=False,
                         help='Turn on relu on feature layer? (default=%(default)s)')
@@ -262,13 +270,13 @@ class Appr(Inc_Learning_Appr):
         
         # constraint OPL loss between current classes and old prototypes
         for mean in self.means:
-            mean = mean.expand_as(features).detach().to(self.device)
-            loss += (torch.abs(features*mean).sum(dim=1)).mean() / len(self.means)
+            mean_tmp = mean.expand_as(features).detach().to(self.device)
+            loss += (torch.abs(features*mean_tmp).sum(dim=1)).mean() * self.mean_weight / len(self.means)
             # loss += nn.CosineEmbeddingLoss()(features, mean, -1*torch.ones(features.shape[0]).to(self.device))
         
         # constraint old prototypes to be parallel
         if old_features is not None:
-            loss += nn.CosineEmbeddingLoss()(features, old_features.detach(),
+            loss += self.cosine_weight * nn.CosineEmbeddingLoss()(features, old_features.detach(),
                                             torch.ones(features.shape[0]).to(self.device))
         return loss
 
