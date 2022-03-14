@@ -55,7 +55,7 @@ class Appr(Inc_Learning_Appr):
                         help='Weight for OPL loss (default=%(default)s)')
         parser.add_argument('--mean_weight', default=1., type=float, required=False,
                         help='Weight for OPL loss (default=%(default)s)')
-        parser.add_argument('--cosin_weight', default=1., type=float, required=False,
+        parser.add_argument('--cosine_weight', default=1., type=float, required=False,
                         help='Weight for OPL loss (default=%(default)s)')
         parser.add_argument('--last_relu', action='store_false', required=False,
                         help='Turn on relu on feature layer? (default=%(default)s)')
