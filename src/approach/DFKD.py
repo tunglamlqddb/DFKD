@@ -47,7 +47,7 @@ class Appr(Inc_Learning_Appr):
                             help='OPL loss (default=%(default)s)')
         parser.add_argument('--gamma', default=0.5, type=float, required=False,
                         help='Gamma for neg pair in OPL (default=%(default)s)')
-        parser.add_argument('--opl_weight', default=1, type=float, required=False,
+        parser.add_argument('--opl_weight', default=1., type=float, required=False,
                         help='Weight for OPL loss (default=%(default)s)')
         parser.add_argument('--last_relu', action='store_false', required=False,
                         help='Turn on relu on feature layer? (default=%(default)s)')
@@ -154,6 +154,9 @@ class Appr(Inc_Learning_Appr):
     def train_loop(self, t, trn_loader, val_loader):
         """Contains the epochs loop"""
 
+        # during training, compute acc by normal procedure
+        self.eval_type = 'normal'
+
         # add exemplars to train_loader
         if len(self.exemplars_dataset) > 0 and t > 0:
             trn_loader = torch.utils.data.DataLoader(trn_loader.dataset + self.exemplars_dataset,
@@ -171,7 +174,8 @@ class Appr(Inc_Learning_Appr):
         # GET NEW CLASS PROTOTYPES  (issue: what to do with OLD PROTOTYPES?)
         # note: rewrite Save_Prototype to allow any BS -> done
         # note: class_labels not correct -> check target from trn_loader -> done
-        self.save_protype(self.model, trn_loader)        
+        self.save_protype(self.model, trn_loader)
+        self.eval_type = 'ncm'        
 
 
     def train_epoch(self, t, trn_loader):
@@ -224,9 +228,10 @@ class Appr(Inc_Learning_Appr):
                 outputs, feats = self.model(images.to(self.device), return_features=True)
                 loss = self.criterion(t, outputs, targets.to(self.device), feats, old_features)
                 # during training, the usual accuracy is not computed
-                if t > len(self.means)-1:
+                if self.eval_type=='normal':
                     hits_taw, hits_tag = self.calculate_metrics(outputs, targets)
                 else:
+                    print('eval using ncm')
                     hits_taw, hits_tag = self.classify(t, feats, targets)
                 # Log
                 total_loss += loss.item() * len(targets)
@@ -259,7 +264,7 @@ class Appr(Inc_Learning_Appr):
         # constraint OPL loss between current classes and old prototypes
         for mean in self.means:
             mean = mean.expand_as(features).detach().to(self.device)
-            loss += (torch.abs(features*mean).sum(dim=1)).mean()
+            loss += (torch.abs(features*mean).sum(dim=1)).mean() / len(self.means)
             # loss += nn.CosineEmbeddingLoss()(features, mean, -1*torch.ones(features.shape[0]).to(self.device))
         
         # constraint old prototypes to be parallel

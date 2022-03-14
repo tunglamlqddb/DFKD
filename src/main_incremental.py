@@ -229,6 +229,10 @@ def main(argv=None):
         # Early stop tasks if flag
         if t >= max_task:
             continue
+        if t == 0 and os.path.isfile(os.path.join(os.path.join(args.log_path, full_exp_name), "models", "test_model.pt")):
+            print('saved model!!')
+            net = torch.load(os.path.join(os.path.join(args.log_path, full_exp_name), "models", "test_model.pt"))
+            continue
 
         print('*' * 108)
         print('Task {:2d}'.format(t))
@@ -274,7 +278,15 @@ def main(argv=None):
             print('>>> Test on task {:2d} : loss={:.3f} | TAw acc={:5.1f}%, forg={:5.1f}%'
                   '| TAg acc={:5.1f}%, forg={:5.1f}% <<<'.format(u, test_loss,
                                                                  100 * acc_taw[t, u], 100 * forg_taw[t, u],
-                                                                 100 * acc_tag[t, u], 100 * forg_tag[t, u]))
+                                                                 100 * acc_tag[t, u], 100 * forg_tag[t, u]), end=' ')
+            if args.approach == 'DFKD':
+                tmp = appr.eval_type
+                appr.eval_type='normal'
+                _, taw, tag = appr.eval(u, tst_loader[u])
+                print(' --- normal eval: TAg acc={:5.1f}% <<<'.format(100*tag)) 
+                appr.eval_type = tmp
+                print('Restore eval type ', appr.eval_type)
+            print()
             # logger.log_scalar(task=t, iter=u, name='loss', group='test', value=test_loss)
             # logger.log_scalar(task=t, iter=u, name='acc_taw', group='test', value=100 * acc_taw[t, u])
             # logger.log_scalar(task=t, iter=u, name='acc_tag', group='test', value=100 * acc_tag[t, u])
@@ -305,7 +317,8 @@ def main(argv=None):
             logger.log_figure(name='weights', iter=t, figure=weights)
             logger.log_figure(name='bias', iter=t, figure=biases)
         # print('Stop at task 1')
-        # torch.save(appr.model, '/content/DFKD/test_mode.pt')
+        if t==0:
+            torch.save(os.path.join(os.path.join(args.log_path, full_exp_name), "models", "test_model.pt"))
         # ncm_loss, ncm_acc, _ = appr.eval_ncm(0, tst_loader[0])
         # print('DEBUG: eval using ncm after task 1: ', ncm_acc*100)
         # print('Check orthogonaliy:')
