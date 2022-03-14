@@ -184,7 +184,7 @@ class Appr(Inc_Learning_Appr):
         # note: rewrite Save_Prototype to allow any BS -> done
         # note: class_labels not correct -> check target from trn_loader -> done
         self.save_protype(self.model, trn_loader)
-        self.eval_type = 'ncm'        
+        self.eval_type = 'normal'        
 
 
     def train_epoch(self, t, trn_loader):
