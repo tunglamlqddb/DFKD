@@ -318,7 +318,7 @@ def main(argv=None):
             logger.log_figure(name='bias', iter=t, figure=biases)
         # print('Stop at task 1')
         if t==0:
-            torch.save(os.path.join(os.path.join(args.results_path, full_exp_name), "models", "test_model.pt"))
+            torch.save(appr.model, os.path.join(os.path.join(args.results_path, full_exp_name), "models", "test_model.pt"))
         # ncm_loss, ncm_acc, _ = appr.eval_ncm(0, tst_loader[0])
         # print('DEBUG: eval using ncm after task 1: ', ncm_acc*100)
         # print('Check orthogonaliy:')
