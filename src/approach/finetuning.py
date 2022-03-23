@@ -231,7 +231,7 @@ class OrthogonalProjectionLoss(nn.Module):
         dot_prod = torch.matmul(features, features.t())
 
         pos_pairs_mean = (mask_pos * dot_prod).sum() / (mask_pos.sum() + 1e-6)
-        neg_pairs_mean = torch.abs(mask_neg * dot_prod).sum() / (mask_neg.sum() + 1e-6)  # TODO: removed abs
+        neg_pairs_mean = (mask_neg * dot_prod).sum() / (mask_neg.sum() + 1e-6)  # TODO: removed abs
 
         loss = (1.0 - pos_pairs_mean) + self.gamma * neg_pairs_mean
 
