@@ -94,6 +94,8 @@ class Appr(Inc_Learning_Appr):
                 old_block = self.model.model.layer3[-1]
                 self.model.model.layer3[-1] = BasicBlockNoRelu(old_block.conv1, old_block.bn1, old_block.relu,
                                                                old_block.conv2, old_block.bn2, old_block.downsample)
+            elif self.model.model.__class__.__name__ == 'SmallCNN':
+                self.model.model.last_relu = False
             else:
                 warnings.warn("Warning: ReLU not removed from last block.")
         # Changes the new head to a CosineLinear
